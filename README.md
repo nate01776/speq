@@ -3,6 +3,13 @@
 
 It is built upon the idea that every API, regardless of protocol has a number of common design patterns, that enables a universal specification.
 
+In addition the describing the APIs themselves, SPEQ can:
+
+- Describe functional test
+- Describe integration tests
+- Describe virtualized services
+- , security and performance as well as virtualized instances of your services.
+
 # What APIs does SPEQ support?
 The goal of SPEQ is to support any client/server based service. Examples of supported APIs include:
 
@@ -21,6 +28,7 @@ The goal of SPEQ is to support any client/server based service. Examples of supp
 - HTTP
 - STOMP
 - NATS
+- coAP
 - XML-RPC
 - JSON-RPC
 - AWS SNS
