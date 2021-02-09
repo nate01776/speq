@@ -34,10 +34,11 @@ Specifications like OpenAPI and AsyncAPI have a number of problems:
 - Versioning is a mess
   - No stance on versioning APIs vs. versioning of the specification which leads to confusion
   - No stance on how the specification should interact with version control (e.g. Git)
-- They are more valuable for consumers of the APIs rather than those interacting with the API infrastructure
-- They don't take into account that some APIs store external schemas (e.g gRPC protobufs or Apache Avro)
+- They don't describe how to test the APIs or services
+- They are more valuable for API clients rather than those interacting with the API server
+- They don't take into account that some APIs store external schemas (e.g. gRPC protobufs or Confluent Schema Registry)
 - [Schema Examples](https://phil.tech/2020/openapi-examples/) are fundamentally broken
-- They've invested in compliance with eachother and JSON Schema which has arguably made the specifications hard to learn
+- They've focused on compliance with JSON Schema and eachother which has made the specifications hard to learn
 
 # What do we need help with?
 Everything! Reach out if you're interested in contributing!
