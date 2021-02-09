@@ -5,10 +5,8 @@ It is built upon the idea that every API, regardless of protocol has a number of
 
 In addition the describing the APIs themselves, SPEQ can:
 
-- Describe functional test
-- Describe integration tests
-- Describe virtualized services
-- , security and performance as well as virtualized instances of your services.
+- Describe API Tests
+- Describe Virtualized Services
 
 # What APIs does SPEQ support?
 The goal of SPEQ is to support any client/server based service. Examples of supported APIs include:
