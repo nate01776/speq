@@ -32,15 +32,15 @@ The goal of SPEQ is to support any client/server based service. Examples of supp
 Specifications like OpenAPI and AsyncAPI have a number of problems:
 - They aren't protocol-agnostic
 - Versioning is a mess
- - No stance on versioning APIs vs. versioning of the specification which leads to confusion
- - No stance on how the specification should interact with version control (e.g. Git)
+  - No stance on versioning APIs vs. versioning of the specification which leads to confusion
+  - No stance on how the specification should interact with version control (e.g. Git)
 - They are more valuable for consumers of the APIs rather than those interacting with the API infrastructure
 - They don't take into account that some APIs store external schemas (e.g gRPC protobufs or Apache Avro)
 - [Schema Examples](https://phil.tech/2020/openapi-examples/) are fundamentally broken
 - They've invested in compliance with eachother and JSON Schema which has arguably made the specifications hard to learn
 
 # What do we need help with?
-Everything! Reach out if you're interested in making a specification
+Everything! Reach out if you're interested in contributing!
 
 # Roadmap
 - [ ] Finalize 1.0.0-alpha Specification
