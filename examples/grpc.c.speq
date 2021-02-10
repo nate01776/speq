@@ -1,0 +1,41 @@
+meta: # OPTIONAL: If not defined, will assume latest
+  runtime: 
+    rest: 
+      version: 1.0.0
+    speq: 
+      version: 1.0.0
+
+summary: 
+  name: example-service # Required
+  pretty-name: Example Service
+  protocol: grpc
+  description: This is an example speq file. Markdown is supported here.
+  contact:
+    name: Tyler Mills
+    email: tyler.a.mills@gmail.com
+    url: https://speq.dev
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+
+resource:
+  HelloService:
+    schema: # will be inherited by all children!
+      format: 
+        name: protobuf
+        version: proto3
+      definition: 
+        url: {{https://example.com/schema.proto}} 
+        security: {{profile}}
+    SayHello:
+      client:
+        stream: false
+        messages:
+          - name: HelloRequest
+            format: application/json #https://www.iana.org/assignments/media-types/media-types.xhtml
+      server:
+        stream: false
+        messages:
+          - name: HelloResponse
+            format: application/json
+            schema: {{https://example.com/schema.proto}}

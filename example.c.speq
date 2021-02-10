@@ -1,0 +1,72 @@
+import: [schema.speq, 'example.env.speq'] # If not defined, will traverse directories for SPEQ files
+
+meta: # OPTIONAL: If not defined, will assume latest
+  runtime: 
+    rest: 
+      version: 1.0.0
+    speq: 
+      version: 1.0.0
+
+summary: 
+  name: example-service # Required
+  pretty-name: Example Service
+  protocol: rest
+  description: This is an example speq file. Markdown is supported here.
+  contact:
+    name: Tyler Mills
+    email: tyler.a.mills@gmail.com
+    url: https://speq.dev
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+
+versions:
+  production:
+    v3:
+      pretty-name: 
+      description: 
+      deprecated: false # OPTIONAL, assumed false.
+    v2:
+      pretty-name:
+      description:
+      deprecated: false
+      
+global:
+  schema:
+    format: application/schema+json;version=draft-07
+  security:
+    - oauth2:
+      - write_pets
+      - read_pets
+    - apiKey: []
+      appId: []
+
+resources:
+  admin/billing:
+    client:
+      post:
+        stream: false # OPTIONAL - Assumed False
+        messages:
+          - format: application/json #https://www.iana.org/assignments/media-types/media-types.xhtml
+            security: # optional if global is set
+              - oauth2:
+                  - write_pets
+                  - read_pets
+            schema: {{https://example.com/schema.json}} # must split into link and format if not defined at top level
+            parameters:
+              - key: Connection
+                type: header
+                schema: {{https://example.com/schema.json}}
+                required: false
+    server:
+      post: 
+        stream: false
+        messages:
+          - format: application/json
+            schema: {{https://example.com/schema.json}}
+            parameters:
+              - key: http-status
+                value: 200
+                type: header
+                schema: {{https://example.com/schema.json}}
+                required: false

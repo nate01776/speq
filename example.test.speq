@@ -1,0 +1,44 @@
+# Supports .speq, .json, .csv, .xml, .py, .ts
+import: [example.speq: api, example.env.speq: env, example.py: code, example.json: exampleData] 
+
+meta: # OPTIONAL - Will fallback to using existing environmnt
+  runtime: 
+    python: 
+      bin: /home/tyler/bin/python 
+      dependencies:
+        local:
+          - '/home/tyler/bin/python/pickle'
+        pip: 
+          requests: 2.25.1
+
+example-suite-a:
+  example-case-a: # Name of the Test Suite / Scenario. Each step returns a JSON object that is available to following steps.
+    - virtualize:
+        pretty-name: /admin Virt #OPTIONAL, will use virtualize-# otherwise
+        description: Virtualizes API /admin endpoint so we can use it in tests without server.
+        api: {{api}}
+        operation: post
+        resource: /admin
+        environment: {{env}}
+        messages:
+        - data: {{data}} 
+          parameters: 
+            key: 201
+            value: Created
+            type: status-code
+
+    - data: {{exampleData}}
+
+    - connect: 
+      - api: {{api}}
+      - resource: /users
+      - data:
+          firstName: {{data.first}}
+          lastName: {{data.last}}
+          city: {{data.city}}
+      - environment: {{env}}
+      - loop: true
+      - assertions: 
+
+    - script:
+      - run: {{code}}
