@@ -37,6 +37,7 @@ The goal of SPEQ is to support any client/server based service. Examples of supp
 # What about OpenAPI (Swagger) & AsyncAPI?
 Specifications like OpenAPI and AsyncAPI have a number of problems:
 - They aren't protocol-agnostic
+- The specification you create isn't always the specification you want to share or distribute (e.g. internal notes, deprecated information)
 - Versioning is a mess
   - No stance on versioning APIs vs. versioning of the specification which leads to confusion
   - No stance on how the specification should interact with version control (e.g. Git)

@@ -1,0 +1,262 @@
+import: # import .speq files or 
+  schemas: [
+    example.schema.speq
+    example2.schema.speq
+  ]
+  environments: [
+    example.env.speq
+  ]
+  tests:  []
+
+#   $*        Wildcard                      #
+#   $text     Variable Reference            #
+#   {text}    Replacement Variable          #
+#   $#        Schema Reference              #
+#   $?        Reserved for Future           #
+#   x-        Prefix to any custom data     #
+
+TODO:
+  - Describe Schema Connections
+  - Message Versioning
+  - Schema Versioning
+  - Schema Linking
+  - Security Profiles
+  - Environments
+  - Connection
+  - Callbacks
+  - Header Expansion
+  - Diffing 
+  - Audit Log
+  - Override Warnings
+  - Describe Connections
+
+runtimes: 
+  rest: 
+    version: '1.0.0'
+  grpc:
+    version: '1.0.0'
+  speq: 
+    version: '1.0.0'
+  python: 
+    version: '3.0.0'
+    bin: /home/tyler/bin/python 
+    dependencies:
+      local:
+        - '/home/tyler/bin/python/pickle'
+      pip: 
+        requests: '2.25.1'
+
+overview:
+  example-rest-service:
+    summary: 
+      title: Example REST Service
+      protocol: rest
+      description: This is an example speq file.
+      contact:
+        name: Tyler Mills
+        email: tyler.a.mills@gmail.com
+        url: https://speq.dev
+      license:
+        id: mit
+        url: https://opensource.org/licenses/MIT
+    versions:
+      production: # each version will generate a new speq file (e.g. example-rest-service-v3-production.speq)
+        title: Production
+        default: true
+        servers: 
+          - id: production-server
+            scheme: https
+            domain: '{region}.api.example.com'
+            path: /v3
+            port: 8080
+            variables:
+              region: 
+                default: world
+                options: 
+                  - world
+                  - north-america
+                  - europe
+                  - asia
+        schema-servers: # git, url, confluent-schema-registry
+          - git:
+              id: git-pets-example
+              provider: github
+              org: smartbear
+              repository: pets-example
+              security: 
+                id: basic-auth 
+                type: basic # one of: basic, bearer, api-key, open-id, oauth2
+      staging:
+        title: Staging
+        servers: 
+          - scheme: https
+            domain: '{region}.staging.api.example.com'
+            path: /v3
+            port: 8080
+            variables:
+              region: 
+                default: world
+                options: 
+                  - world
+                  - north-america
+                  - europe
+                  - asia
+        visibility:
+          public: false
+          emails: 
+            $*@smartbear.com
+          groups:
+            devops
+      development:
+        title: Local Development
+        servers: 
+          - scheme: https
+            domain: localhost
+            path: /v3
+            port: 8080
+            variables:
+              region: 
+                default: world
+                options: 
+                  - world
+                  - north-america
+                  - europe
+                  - asia
+        visibility:
+          public: false
+  example-grpc-service:
+    summary: 
+      title: Example gRPC Service
+      protocol: grpc
+      description: This is an example speq config for gRPC. 
+    versions:
+      production: # each version will generate a new speq file (e.g. example-rest-service-v3-production.speq)
+        title: Production
+        servers: 
+          - id: production-server
+            scheme: https
+            domain: grpc.example.com
+            port: 9090
+        schema-servers: # git, url, confluent-schema-registry
+          - git:
+              id: git-grpc-example
+              provider: github
+              org: smartbear
+              repository: grpc-example
+              security: 
+                id: basic-auth 
+                type: basic 
+
+apis: # a way to reference this: example-rest-service.admin/billing/users.post.sent
+  example-rest-api: 
+    resources:
+      admin/billing/users/{id}:
+        operations:
+          post: #post, get, publish, subscribe, unary, client-stream, server-stream, bidirectional-stream, query, mutation
+            client:
+              sent:
+                messages: 
+                - schema: $#schemas/User
+                  metadata:
+                    - key: Connection
+                      type: header
+                      schema: 
+                        type: string
+                      required: false
+                  versions: [development/$*] # if not set will use defaults set for version
+                  formatting:
+                    message: application/json
+                    schema:
+                      key: json-schema
+                      version: draft-07
+              received: 
+                - schema: #TODO
+                  metadata:
+                    - key: 200
+                      type: status-code # status-code, query-parameter, path-parameter, header, cookie, variable, kafka-key, kafka-partition 
+
+  example-grpc-api:
+    resources:  
+      SayHello:
+        operations:
+          client-stream:
+            client: 
+              sent:
+                stream: false
+                messages:
+                  - external-schema:
+                      server: git-grpc-example
+                      file: HelloService.protobuf
+                      reference: HelloRequest
+              received:
+                stream: false
+                messages: 
+                  - external-schema:
+                      server: git-grpc-example
+                      file: HelloService.protobuf
+                      reference: HelloResponse
+
+schemas:
+  User:
+    format: 
+      type: json-schema # json-schema, json-schema-xml, avro, openapi, asyncapi, protobuf, thrift, mson, sql ddl
+      version: draft-07
+    json-schema: 
+      type: object 
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+
+rules:
+  rest:
+    title: Defaults (REST)
+    description: Default rules for REST APIs
+    strict: true # If "true", data in "then" conditional CANNOT be overridden on a case by case basis
+    for: apis # or schemas
+    versions: [production/$*]
+    if:
+      protocol: [rest] 
+      resources: [$*]
+      operations: [$*]
+      client: [sent, received]
+    then:
+      messages:
+        formatting: 
+          message: application/json
+  rest/errors/403: # since this is nested it acts as a nested IF conditional
+    if:
+      messages:
+        metadata:
+          type: status-code
+          key: 403
+    then:
+      messages:
+        schema: $#schemas/Error
+  grpc:
+    title: Defaults (gRPC)
+    description: Default Rules for gRPC APIs
+    strict: true
+    for: apis
+    versions: [$*]
+    if:
+      protocol: [grpc]
+    then:
+      messages:
+        formatting:
+          schema:
+            name: protobuf
+            version: proto3
+  global-defaults:
+    title: Defaults (Global)
+    description: Defaults for all APIs
+
+
+
+
+
+- Compiling speq
+- Converting everything to JSON Schema
+- 

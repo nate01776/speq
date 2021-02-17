@@ -1,44 +1,49 @@
-# Supports .speq, .json, .csv, .xml, .py, .ts
-import: [example.speq: api, example.env.speq: env, example.py: code, example.json: exampleData] 
+import: [ 
+  example.speq: api,
+  example.env.speq: env, 
+  example.py: exampleScript, 
+  example2.py: exampleScript2, 
+  example.csv: exampleData
+] # Supports .speq, .json, .csv, .xml, .py, .ts
 
-meta: # OPTIONAL - Will fallback to using existing environmnt
-  runtime: 
-    python: 
-      bin: /home/tyler/bin/python 
-      dependencies:
-        local:
-          - '/home/tyler/bin/python/pickle'
-        pip: 
-          requests: 2.25.1
+summary: 
+  name: Primary Tests
+  pretty-name: Test A
 
 example-suite-a:
-  example-case-a: # Name of the Test Suite / Scenario. Each step returns a JSON object that is available to following steps.
+  example-case-a:
     - virtualize:
-        pretty-name: /admin Virt #OPTIONAL, will use virtualize-# otherwise
+        id: virtualize-a
+        pretty-name: /admin Virt 
         description: Virtualizes API /admin endpoint so we can use it in tests without server.
         api: {{api}}
         operation: post
         resource: /admin
-        environment: {{env}}
+        environment: $env
         messages:
-        - data: {{data}} 
-          parameters: 
+        - data: $data
+          metadata: 
             key: 201
             value: Created
             type: status-code
 
-    - data: {{exampleData}}
+    - data: $this.virtualize-a
 
     - connect: 
-      - api: {{api}}
-      - resource: /users
+      - api: $api
+      - resource: grpc/HelloService/HelloRequest
       - data:
-          firstName: {{data.first}}
-          lastName: {{data.last}}
-          city: {{data.city}}
-      - environment: {{env}}
+          firstName: $data.first
+          lastName: $data.last
+          city: $data.city
+      - environment: $env
       - loop: true
-      - assertions: 
+      - assertions:
+          - contract
+          - parameters:
+              headers:
+                http-status: [200, 202]
+          - script: exampleScript
 
     - script:
-      - run: {{code}}
+      - run: $exampleScript2
