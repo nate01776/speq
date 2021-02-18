@@ -1,3 +1,5 @@
+![SPEQ Logo](https://i.imgur.com/y6RsoEy.png)
+
 # What is SPEQ?
 [SPEQ](https://speq.dev) (pronounced "speck") is an extensible, protocol-agnostic, and platform neutral specification for APIs and Services.
 
