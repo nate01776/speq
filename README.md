@@ -5,9 +5,10 @@
 [SPEQ](https://speq.dev) (pronounced "speck") is a universal, protocol-agnostic specification for any API.
 
 SPEQ:
-- Provides centralized documentation of every API & DB within your organization
+- Provides centralized documentation of every API, Database, and Service within your organization and how they relate to each other
 - Can enforce best practices within your organization with its rules engine
-- Can 
+- Can replace or complement your existing specifications or schemas
+- Provides a framework for virtualizing and testing your APIs, Services and Databases
 
 # What APIs does SPEQ support?
 The goal of SPEQ is to support any client/server based service. Examples of supported APIs include:
@@ -47,10 +48,10 @@ With this base implementation, the key metadata documenting the API is consisten
 Depending on your needs, SPEQ can replace or act as a meta-schema for:
 - OpenAPI
 - AsyncAPI
+- API Blueprint
 - WSDL
 - WADL
 - Thrift
-- API Blueprint
 
 However, you may have schema descriptions that may be core to the your current development workflow that are hosted externally on a Git repository or schema server. For example:
 - SQL DDLs
