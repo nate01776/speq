@@ -1,36 +1,50 @@
-import: # import .speq files or 
-  schemas: [
-    example.schema.speq
-    example2.schema.speq
-  ]
-  environments: [
-    example.env.speq
-  ]
-  tests:  []
+import: [] # directly reference .speq file or directories containing .speq files, use $* wildcard for recursion (e.g. /rules/$*)
 
+#   Take 90 seconds to read this comment block. It's all you need to know!
+#
 #   $*        Wildcard                      #
 #   $text     Variable Reference            #
 #   {text}    Replacement Variable          #
 #   $#        Schema Reference              #
 #   $?        Reserved for Future           #
+#   $$        Treat $ as string             #
+#   $ref      Reserved for JSON schemas     #
 #   x-        Prefix to any custom data     #
+#
+#   REQUIRED
+#   .meta.speq            Centralized description of all APIs, input to `speccy` terminal utility and outputs compiled .speq
+#
+#   OPTIONAL (FOR ORGANIZATION)
+#     .overview.speq        Contains one or many API descriptions, associated servers and versions
+#     .secrets.speq         Contains secrets required for accessing external schemas and making API connections !!!ADD TO .gitignore!!!
+#     .blank.secrets.speq   Contains example secrets, so you don't have to start from scratch. Auto-updated on each compile.
+#     .schemas.speq         Contains one or many message schemas
+#     .resources.speq       Contains one or many resource descriptions
+#     .messages.speq        Contains one or many messages that conform to a .schema.speq and can be used as examples or for virtualization
+#     .props.speq           Contains "key, value" props that can be referenced in .messages.speq and tests, e.g. fake names, config data, etc.
+#     .runtimes.speq        Contains one or many runtime descriptions
+#     .virt.speq            Contains one or many virtualized API descriptions leveraging .messages.speq
+#     .tests.speq           Contains one or many test descriptions
+#     .changelog.speq       Contains one or many changelogs
+#
+#   OUTPUT
+#     .speq is a flattened & resolved import version of the .meta.speq file - will contain all APIs and optionally 1 .speq per version
+#
 
-TODO:
-  - Describe Schema Connections
-  - Message Versioning
-  - Schema Versioning
-  - Schema Linking
-  - Security Profiles
-  - Environments
-  - Connection
-  - Callbacks
-  - Header Expansion
-  - Diffing 
-  - Audit Log
-  - Override Warnings
-  - Describe Connections
+changelog:
+  2021-01-01: # ISO-8601 UTC
+    new:
+      api: 
+        example-rest-service:
+          resource:
+            /admin/billing/{users}
 
-runtimes: 
+audit: # OPTIONAL - metadata required for compiliation, will be added to changelog
+  email
+  name
+  description
+
+runtimes: # OPTIONAL - Will assume latest
   rest: 
     version: '1.0.0'
   grpc:
@@ -46,10 +60,10 @@ runtimes:
       pip: 
         requests: '2.25.1'
 
-overview:
-  example-rest-service:
+overview: # REQUIRED
+  example-rest-api:
     summary: 
-      title: Example REST Service
+      title: Example REST API
       protocol: rest
       description: This is an example speq file.
       contact:
@@ -59,16 +73,33 @@ overview:
       license:
         id: mit
         url: https://opensource.org/licenses/MIT
-    versions:
-      production: # each version will generate a new speq file (e.g. example-rest-service-v3-production.speq)
-        title: Production
+    versions: # environments? releases? variants?
+      production/v24: # templating
+        title: Production (v24)
         default: true
+        split: true # if set to true, will also be included in its own .speq file (for sharing publicly/hiding internal APIs): e.g. example-rest-service-production-v24.speq
         servers: 
-          - id: production-server
+          - id: production-server-24
             scheme: https
             domain: '{region}.api.example.com'
-            path: /v3
-            port: 8080
+            path: /v24
+            port: 8080 
+            variables:
+              region: 
+                default: world
+                options: 
+                  - world
+                  - north-america
+                  - europe
+                  - asia
+      production/v23:
+        title: Production
+        servers: 
+          - id: production-server-23
+            scheme: https
+            domain: '{region}.api.example.com'
+            path: /v23
+            port: 8080 
             variables:
               region: 
                 default: world
@@ -124,9 +155,9 @@ overview:
                   - asia
         visibility:
           public: false
-  example-grpc-service:
+  example-grpc-api:
     summary: 
-      title: Example gRPC Service
+      title: Example gRPC API
       protocol: grpc
       description: This is an example speq config for gRPC. 
     versions:
@@ -147,34 +178,32 @@ overview:
                 id: basic-auth 
                 type: basic 
 
-apis: # a way to reference this: example-rest-service.admin/billing/users.post.sent
-  example-rest-api: 
-    resources:
-      admin/billing/users/{id}:
-        operations:
-          post: #post, get, publish, subscribe, unary, client-stream, server-stream, bidirectional-stream, query, mutation
-            client:
-              sent:
-                messages: 
-                - schema: $#schemas/User
-                  metadata:
-                    - key: Connection
-                      type: header
-                      schema: 
-                        type: string
-                      required: false
-                  versions: [development/$*] # if not set will use defaults set for version
-                  formatting:
-                    message: application/json
-                    schema:
-                      key: json-schema
-                      version: draft-07
-              received: 
-                - schema: #TODO
-                  metadata:
-                    - key: 200
-                      type: status-code # status-code, query-parameter, path-parameter, header, cookie, variable, kafka-key, kafka-partition 
-
+resources:
+  example-rest-api:
+    admin/billing/users/{id}:
+      operations:
+        post: #post, get, publish, subscribe, unary, client-stream, server-stream, bidirectional-stream, query, mutation
+          client:
+            sent:
+              messages: 
+              - schema: $#schemas/User # can be the referenced schema OR you can simply write the schema in your preferred format
+                metadata:
+                  - key: Connection
+                    type: header
+                    schema: 
+                      type: string
+                    required: false
+                versions: [production] # if not set will use defaults set for version
+                formatting:
+                  message: application/json
+                  schema:
+                    key: json-schema
+                    version: draft-07
+            received: 
+              - schema: #TODO
+                metadata:
+                  - key: 200
+                    type: status-code # status-code, query-parameter, path-parameter, header, cookie, variable, kafka-key, kafka-partition 
   example-grpc-api:
     resources:  
       SayHello:
@@ -196,7 +225,7 @@ apis: # a way to reference this: example-rest-service.admin/billing/users.post.s
                       file: HelloService.protobuf
                       reference: HelloResponse
 
-schemas:
+schemas: # OPTIONAL, can reference schemas locally within resources
   User:
     format: 
       type: json-schema # json-schema, json-schema-xml, avro, openapi, asyncapi, protobuf, thrift, mson, sql ddl
@@ -210,8 +239,8 @@ schemas:
         name:
           type: string
 
-rules:
-  rest:
+rules: # OPTIONAL
+  rest-defaults:
     title: Defaults (REST)
     description: Default rules for REST APIs
     strict: true # If "true", data in "then" conditional CANNOT be overridden on a case by case basis
@@ -235,7 +264,7 @@ rules:
     then:
       messages:
         schema: $#schemas/Error
-  grpc:
+  grpc-defaults:
     title: Defaults (gRPC)
     description: Default Rules for gRPC APIs
     strict: true
@@ -254,9 +283,26 @@ rules:
     description: Defaults for all APIs
 
 
-
-
-
-- Compiling speq
-- Converting everything to JSON Schema
-- 
+# production:
+#   client:
+#     properties:
+#   server:
+#     properties:
+#       kafka:
+#         serializer: avro
+#   security:
+#     properties:
+# security:
+#   oauth2:
+#     title: OAuth2
+#     type: oauth2
+#     description: This API uses OAuth 2
+#     flows: 
+#   apiKey: 
+#     type: key
+#     in: header
+#     name: X-API-KEY
+#   appId: 
+#     type: key
+#     in: header
+#     name: X-APP-ID
