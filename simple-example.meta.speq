@@ -1,0 +1,93 @@
+overview:
+  example-rest-api:
+    summary: 
+      protocol: rest
+    versions:
+      production:
+        title: Production
+        default: true
+        servers: 
+          - id: production-server-24
+            scheme: https
+            domain: '{region}.api.example.com'
+            path: /v24 # optional, only if server has path
+            port: 8080 
+            variables:
+              region: 
+                default: world # variables must have default defined
+                options: 
+                  - world
+                  - north-america
+        schema-servers:
+          - git:
+              id: git-pets-example
+              provider: github
+              org: smartbear
+              repository: pets-example
+              security:
+                id: basic-auth 
+                type: basic
+
+resources:
+  example-rest-api:
+    admin/billing/users/{id}:
+      operations:
+        post:
+          client:
+            sent:
+              messages: 
+              - schema: $#schemas/User # can be the referenced schema OR you can simply write the schema in your preferred format
+                metadata:
+                  - key: Connection
+                    type: header
+                    schema: 
+                      type: string
+                    required: false
+                versions: [production/$*] # OPTIONAL, if not set, will assume the version set as "default"
+                formatting:
+                  message: application/json
+                  schema:
+                    key: json-schema
+                    version: draft-07
+            received: 
+              - schema: #TODO
+                metadata:
+                  - key: 200
+                    type: status-code # status-code, query-parameter, path-parameter, header, cookie, variable, kafka-key, kafka-partition 
+
+schemas: # OPTIONAL, can reference schemas locally within resources
+  User:
+    format: 
+      type: json-schema # json-schema, json-schema-xml, avro, openapi, asyncapi, protobuf, thrift, mson, sql-ddl
+      version: draft-07
+    json-schema: 
+      type: object 
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+
+rules: # OPTIONAL, will merge "then" blocks into compiled .speq
+  rest-defaults:
+    title: Defaults (REST)
+    description: Default rules for REST APIs
+    strict: true # OPTIONAL - If "true", data in "then" conditional CANNOT be overridden on a case by case basis. Default is false. 
+    for: resources
+    versions: [production/$*] # Optional
+    if:
+      protocol: [rest] 
+    then:
+      messages:
+        formatting: 
+          message: application/json
+  rest/errors/403: # since this is nested via '/text/text' syntax it acts as a nested IF conditional
+    if:
+      messages:
+        metadata:
+          type: status-code
+          key: 403
+    then:
+      messages:
+        schema: $#schemas/Error
