@@ -1,6 +1,5 @@
 ![SPEQ Logo](https://i.imgur.com/y6RsoEy.png)
 
-
 # What is SPEQ?
 [SPEQ](https://speq.dev) (pronounced "speck") is a universal, protocol-agnostic specification for any API.
 
